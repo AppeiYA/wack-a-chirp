@@ -8,74 +8,74 @@
 
 html,
 body {
+  width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
-  background: #12161f;
+  background: #0b0e13;
   color: #e8ecf1;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  overflow-x: hidden;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-/* App container */
+/* Full-width App Container */
 .app {
-  min-height: 100dvh;
+  width: 100vw;
+  height: 100dvh;
+  max-width: 100vw;
   max-height: 100dvh;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  padding: 10px 12px;
-  box-sizing: border-box;
-  overflow-y: auto;
-  overflow-x: hidden;
+  background: #0b0e13;
+  overflow: hidden;
+  position: relative;
 }
 
-/* On desktop and large screens, disable body scroll so gameplay never jumps */
-@media (min-height: 580px) {
-  .app {
-    overflow-y: hidden;
-    justify-content: center;
-  }
-}
-
-/* When playing, lock touch scroll and mouse gestures */
 .app.screen-playing {
-  overscroll-behavior: none;
   touch-action: none;
+  overscroll-behavior: none;
 }
 
-/* Header */
-.app-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-h1 {
-  margin: 0;
-  font-size: 24px;
-  letter-spacing: 1px;
-  font-weight: 800;
-  color: #f8fafc;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
-/* HUD */
+/* Full-width HUD / Header Bar */
 .hud {
+  width: 100%;
+  max-width: 100%;
+  padding: 6px 14px;
+  background: #141a24;
+  border-bottom: 1px solid #243042;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  width: min(96vw, 1100px, calc((100dvh - 120px) * 16 / 9));
-  flex-wrap: wrap;
+  gap: 10px;
+  flex-shrink: 0;
+  z-index: 20;
+}
+
+.hud-brand {
+  display: flex;
+  align-items: center;
+}
+
+.hud-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #f8fafc;
+  white-space: nowrap;
 }
 
 .hud-stats {
   display: flex;
-  flex: 1 1 280px;
-  gap: 6px;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 520px;
 }
 
 .stat-card {
@@ -84,36 +84,35 @@ h1 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4px 6px;
-  background: #1a222e;
-  border: 1px solid #2d3b4e;
+  padding: 3px 8px;
+  background: #1b2330;
+  border: 1px solid #2c3a4e;
   border-radius: 6px;
-  min-width: 50px;
-  transition: border-color 0.15s, background-color 0.15s;
+  min-width: 55px;
+  transition: all 0.15s ease;
 }
 
 .stat-card span {
-  font-size: 11px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #8fa0b5;
+  color: #8da1b9;
 }
 
 .stat-card b {
-  font-size: 19px;
+  font-size: 18px;
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
-  color: #f1f5f9;
+  color: #f8fafc;
 }
 
 .stat-card.hot {
   border-color: #ffd84a;
-  background: #252824;
+  background: #272822;
 }
 
 .stat-card.time-warning {
   border-color: #ff5252;
-  color: #ff5252;
 }
 
 .stat-card.time-warning b {
@@ -143,6 +142,7 @@ h1 {
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, transform 0.05s;
   white-space: nowrap;
+  touch-action: manipulation;
 }
 
 .ctrl-btn:hover {
@@ -151,7 +151,7 @@ h1 {
 }
 
 .ctrl-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
 .ctrl-btn.back-btn {
@@ -181,28 +181,37 @@ h1 {
   color: #94a3b8;
 }
 
-/* Stage & Canvas */
+.ctrl-btn.fullscreen-btn {
+  font-size: 15px;
+  padding: 5px 9px;
+  background: #17212e;
+}
+
+/* Full Width Stage & Game Canvas */
 .stage {
+  flex: 1;
+  width: 100%;
+  max-width: 100%;
+  min-height: 0;
   position: relative;
-  width: min(96vw, 1100px, calc((100dvh - 120px) * 16 / 9));
-  aspect-ratio: 16 / 9;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #0b0e13;
+  overflow: hidden;
 }
 
 .game-canvas {
-  display: block;
   width: 100%;
   height: 100%;
-  aspect-ratio: 16 / 9;
+  display: block;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
   image-rendering: pixelated;
-  border: 3px solid #0a0d12;
-  border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
   touch-action: none;
   -webkit-touch-callout: none;
   user-select: none;
@@ -212,31 +221,32 @@ h1 {
   cursor: none;
 }
 
-/* Overlay & Panels */
+/* Overlays */
 .overlay {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(10, 14, 20, 0.78);
-  backdrop-filter: blur(2px);
-  border-radius: 6px;
-  padding: 10px;
+  background: rgba(10, 14, 20, 0.82);
+  backdrop-filter: blur(3px);
+  padding: 12px;
   box-sizing: border-box;
   overflow-y: auto;
-  z-index: 10;
+  z-index: 30;
 }
 
 .panel {
-  width: min(92%, 400px);
+  width: min(94%, 420px);
   max-height: 96%;
-  padding: 14px 18px;
+  padding: 16px 20px;
   text-align: center;
   background: #18202c;
   border: 2px solid #334155;
   border-radius: 10px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
   box-sizing: border-box;
   margin: auto;
 }
@@ -268,7 +278,7 @@ h1 {
 }
 
 .panel .big {
-  font-size: 44px;
+  font-size: 42px;
   font-weight: 800;
   margin: 2px 0;
   color: #ffffff;
@@ -411,10 +421,6 @@ button.secondary:hover {
   padding: 2px 4px;
 }
 
-.text-btn:hover {
-  color: #a4c2ff;
-}
-
 .panel-footer {
   display: flex;
   align-items: center;
@@ -429,135 +435,75 @@ button.secondary:hover {
   margin-top: 4px;
 }
 
-/* Rotate phone hint */
-.rotate-hint {
-  display: none;
-}
-
-@media (orientation: portrait) and (max-width: 640px) and (pointer: coarse) {
-  .rotate-hint {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: min(96vw, 1100px);
-    padding: 6px 10px;
-    font-size: 12px;
-    background: #192230;
-    border: 1px solid #ffd84a;
-    border-radius: 6px;
-    color: #e2e8f0;
+/* =========================================================
+   AUTOMATIC LANDSCAPE ON ANDROID / PHONES
+   When a phone is in portrait orientation, automatically
+   render the app in full-width landscape across the screen!
+   ========================================================= */
+@media (orientation: portrait) and (max-width: 900px) {
+  html,
+  body {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
   }
 
-  .rotate-hint span:nth-child(2) {
-    flex: 1;
-  }
-
-  .rotate-hint button {
-    padding: 3px 8px;
-    font-size: 11px;
-    background: #253245;
-    border-color: #ffd84a;
-    color: #ffd84a;
-  }
-
-  .rotate-hint .phone {
-    flex: 0 0 auto;
-    width: 10px;
-    height: 18px;
-    border: 2px solid #ffd84a;
-    border-radius: 2px;
-    animation: tilt 1.8s ease-in-out infinite;
-  }
-}
-
-@keyframes tilt {
-  0%, 30% {
-    transform: rotate(0deg);
-  }
-  60%, 100% {
-    transform: rotate(90deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .rotate-hint .phone {
-    animation: none;
-  }
-}
-
-/* Mobile Portrait Optimization */
-@media (max-width: 640px) {
   .app {
-    padding: 6px 8px;
-    gap: 6px;
-  }
-
-  h1 {
-    font-size: 18px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 100dvh;
+    height: 100dvw;
+    max-width: 100dvh;
+    max-height: 100dvw;
+    transform: translate(-50%, -50%) rotate(90deg);
+    transform-origin: center center;
+    overflow: hidden;
   }
 
   .hud {
+    padding: 4px 10px;
     gap: 6px;
-    width: 98vw;
+  }
+
+  .hud-title {
+    font-size: 16px;
   }
 
   .hud-stats {
     gap: 4px;
-    min-width: 100%;
   }
 
   .stat-card {
-    padding: 3px 4px;
+    padding: 2px 5px;
     min-width: 44px;
   }
 
   .stat-card span {
-    font-size: 10px;
+    font-size: 9px;
   }
 
   .stat-card b {
-    font-size: 16px;
-  }
-
-  .hud-actions {
-    width: 100%;
-    justify-content: flex-end;
-    gap: 6px;
+    font-size: 15px;
   }
 
   .ctrl-btn {
-    padding: 5px 10px;
-    font-size: 12px;
-    flex: 1;
-    text-align: center;
-  }
-
-  .stage {
-    width: 98vw;
+    padding: 4px 8px;
+    font-size: 11px;
   }
 
   .panel {
-    width: 96%;
-    padding: 10px 12px;
+    padding: 10px 14px;
+    max-height: 92%;
   }
 
   .panel h2 {
     font-size: 18px;
-    margin-bottom: 2px;
-  }
-
-  .panel .tagline {
-    font-size: 12px;
-    margin-bottom: 4px;
-  }
-
-  .panel .muted.small {
-    font-size: 10px;
-    margin-bottom: 6px;
   }
 
   .panel .big {
-    font-size: 34px;
+    font-size: 32px;
   }
 
   .picker {
@@ -568,28 +514,17 @@ button.secondary:hover {
     padding: 4px 2px;
     font-size: 12px;
   }
-
-  button.primary {
-    font-size: 14px;
-    padding: 7px 12px;
-  }
 }
 
-/* Mobile Landscape Optimization */
-@media (max-height: 480px) {
-  .app {
-    padding: 4px 8px;
-    gap: 4px;
-    overflow-y: hidden;
-  }
-
-  .app-header h1 {
-    font-size: 15px;
-  }
-
+/* Mobile Landscape (Native or Rotated) */
+@media (orientation: landscape) and (max-height: 520px) {
   .hud {
-    width: min(96vw, calc((100dvh - 54px) * 16 / 9));
-    gap: 4px;
+    padding: 4px 10px;
+    gap: 6px;
+  }
+
+  .hud-title {
+    font-size: 16px;
   }
 
   .hud-stats {
@@ -597,7 +532,8 @@ button.secondary:hover {
   }
 
   .stat-card {
-    padding: 2px 4px;
+    padding: 2px 6px;
+    min-width: 45px;
   }
 
   .stat-card span {
@@ -605,28 +541,25 @@ button.secondary:hover {
   }
 
   .stat-card b {
-    font-size: 14px;
+    font-size: 15px;
   }
 
   .ctrl-btn {
-    padding: 3px 8px;
+    padding: 4px 8px;
     font-size: 11px;
   }
 
-  .stage {
-    width: min(96vw, calc((100dvh - 54px) * 16 / 9));
-  }
-
   .panel {
-    padding: 8px 12px;
+    padding: 8px 14px;
   }
 
   .panel h2 {
     font-size: 16px;
+    margin-bottom: 2px;
   }
 
   .panel .big {
-    font-size: 26px;
+    font-size: 28px;
   }
 
   .picker {
@@ -638,198 +571,4 @@ button.secondary:hover {
     margin-top: 6px;
     gap: 4px;
   }
-}
-
-/* Custom sleek scrollbar for when needed */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #12161f;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #2a3547;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #3c4c66;
-}
-
-
-/* Mobile Portrait Optimization */
-@media (max-width: 640px) {
-  .app {
-    padding: 6px 8px;
-    gap: 6px;
-  }
-
-  h1 {
-    font-size: 18px;
-  }
-
-  .hud {
-    gap: 6px;
-    width: 98vw;
-  }
-
-  .hud-stats {
-    gap: 4px;
-    min-width: 100%;
-  }
-
-  .stat-card {
-    padding: 3px 4px;
-    min-width: 44px;
-  }
-
-  .stat-card span {
-    font-size: 10px;
-  }
-
-  .stat-card b {
-    font-size: 16px;
-  }
-
-  .hud-actions {
-    width: 100%;
-    justify-content: flex-end;
-    gap: 6px;
-  }
-
-  .ctrl-btn {
-    padding: 5px 10px;
-    font-size: 12px;
-    flex: 1;
-    text-align: center;
-  }
-
-  .stage {
-    width: 98vw;
-  }
-
-  .panel {
-    width: 96%;
-    padding: 10px 12px;
-  }
-
-  .panel h2 {
-    font-size: 18px;
-    margin-bottom: 2px;
-  }
-
-  .panel .tagline {
-    font-size: 12px;
-    margin-bottom: 4px;
-  }
-
-  .panel .muted.small {
-    font-size: 10px;
-    margin-bottom: 6px;
-  }
-
-  .panel .big {
-    font-size: 34px;
-  }
-
-  .picker {
-    margin: 6px 0;
-  }
-
-  .picker button {
-    padding: 4px 2px;
-    font-size: 12px;
-  }
-
-  button.primary {
-    font-size: 14px;
-    padding: 7px 12px;
-  }
-}
-
-/* Mobile Landscape Optimization */
-@media (max-height: 480px) {
-  .app {
-    padding: 4px 8px;
-    gap: 4px;
-    overflow-y: hidden;
-  }
-
-  .app-header h1 {
-    font-size: 15px;
-  }
-
-  .hud {
-    width: min(96vw, calc((100dvh - 54px) * 16 / 9));
-    gap: 4px;
-  }
-
-  .hud-stats {
-    gap: 4px;
-  }
-
-  .stat-card {
-    padding: 2px 4px;
-  }
-
-  .stat-card span {
-    font-size: 9px;
-  }
-
-  .stat-card b {
-    font-size: 14px;
-  }
-
-  .ctrl-btn {
-    padding: 3px 8px;
-    font-size: 11px;
-  }
-
-  .stage {
-    width: min(96vw, calc((100dvh - 54px) * 16 / 9));
-  }
-
-  .panel {
-    padding: 8px 12px;
-  }
-
-  .panel h2 {
-    font-size: 16px;
-  }
-
-  .panel .big {
-    font-size: 26px;
-  }
-
-  .picker {
-    margin: 4px 0;
-  }
-
-  .btn-row,
-  .btn-stack {
-    margin-top: 6px;
-    gap: 4px;
-  }
-}
-
-/* Custom sleek scrollbar for when needed */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #12161f;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #2a3547;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #3c4c66;
 }

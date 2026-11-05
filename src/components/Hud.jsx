@@ -10,13 +10,18 @@ export default function Hud({
   onResume,
   onStop,
   onBack,
+  onToggleFullscreen,
 }) {
   const isPlaying = screen === "playing";
   const isPaused = screen === "paused";
   const inGame = isPlaying || isPaused;
 
   return (
-    <div className="hud">
+    <header className="hud">
+      <div className="hud-brand">
+        <h1 className="hud-title">WackAChirp</h1>
+      </div>
+
       <div className="hud-stats">
         <div className="stat-card">
           <span>Score</span>
@@ -77,9 +82,19 @@ export default function Hud({
           aria-label={muted ? "Turn sound on" : "Turn sound off"}
           title={muted ? "Turn sound on" : "Turn sound off"}
         >
-          {muted ? "🔇 Sound: off" : "🔊 Sound: on"}
+          {muted ? "🔇 Off" : "🔊 On"}
+        </button>
+
+        <button
+          type="button"
+          className="ctrl-btn fullscreen-btn"
+          onClick={onToggleFullscreen}
+          aria-label="Toggle Fullscreen"
+          title="Toggle Fullscreen"
+        >
+          ⛶
         </button>
       </div>
-    </div>
+    </header>
   );
 }

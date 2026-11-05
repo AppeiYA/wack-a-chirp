@@ -4,7 +4,6 @@ import Hud from "./components/Hud";
 import { MenuOverlay, GameOverOverlay, PauseOverlay } from "./components/Overlays";
 import { useHighScore } from "./hooks/useHighScore";
 import { ROUND_SECONDS } from "./game/config";
-import RotateHint from "./components/RotateHint";
 import { isMuted, setMuted, unlock, sfx } from "./game/audio";
 
 export default function App() {
@@ -26,8 +25,39 @@ export default function App() {
     if (!next) sfx.tick();
   };
 
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (!document.fullscreenElement) {
+        if (document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        }
+      }
+    } catch {
+      // Fullscreen permission denied or unsupported
+    }
+
+    try {
+      if (window.screen?.orientation?.lock) {
+        await window.screen.orientation.lock("landscape");
+      }
+    } catch {
+      // Orientation lock not permitted without user gesture or unsupported
+    }
+  }, []);
+
   const start = useCallback(() => {
     unlock();
+    try {
+      if (window.screen?.orientation?.lock) {
+        window.screen.orientation.lock("landscape").catch(() => {});
+      }
+    } catch {
+      // Screen orientation not supported
+    }
     setScore(0);
     setCombo({ streak: 0, mult: 1 });
     setSecs(ROUND_SECONDS);
@@ -92,10 +122,6 @@ export default function App() {
 
   return (
     <main className={`app screen-${screen}`}>
-      <header className="app-header">
-        <h1>WackAChirp</h1>
-      </header>
-
       <Hud
         score={score}
         best={best}
@@ -108,9 +134,8 @@ export default function App() {
         onResume={handleResume}
         onStop={handleStop}
         onBack={handleBackToMenu}
+        onToggleFullscreen={toggleFullscreen}
       />
-
-      <RotateHint />
 
       <div className={`stage ${screen === "playing" ? "playing" : ""}`}>
         <GameCanvas

@@ -74,13 +74,14 @@ const GameCanvas = forwardRef(function GameCanvas(
     });
     gameRef.current = game;
 
-    // Responsive High-DPI canvas resizing
+    // Responsive High-DPI canvas resizing using client layout dimensions
     const updateSize = () => {
-      const r = canvas.getBoundingClientRect();
-      if (r.width === 0 || r.height === 0) return;
+      const cw = canvas.clientWidth;
+      const ch = canvas.clientHeight;
+      if (cw === 0 || ch === 0) return;
       const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
-      const targetW = Math.max(W, Math.round(r.width * dpr));
-      const targetH = Math.max(H, Math.round(r.height * dpr));
+      const targetW = Math.max(W, Math.round(cw * dpr));
+      const targetH = Math.max(H, Math.round(ch * dpr));
       if (canvas.width !== targetW || canvas.height !== targetH) {
         canvas.width = targetW;
         canvas.height = targetH;
@@ -135,8 +136,33 @@ const GameCanvas = forwardRef(function GameCanvas(
   }, [session]);
 
   const toXY = (e) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    return [(e.clientX - r.left) * (W / r.width), (e.clientY - r.top) * (H / r.height)];
+    const canvas = e.currentTarget;
+    const r = canvas.getBoundingClientRect();
+    const cw = canvas.clientWidth;
+    const ch = canvas.clientHeight;
+
+    // Detect if element is rotated 90deg on screen (e.g. mobile portrait auto-landscape)
+    const isRotated = Math.abs(r.width - ch) < Math.abs(r.width - cw);
+
+    if (isRotated) {
+      // 90deg clockwise rotation:
+      // Screen Top-to-Bottom corresponds to Canvas Local X (0..W)
+      // Screen Right-to-Left corresponds to Canvas Local Y (0..H)
+      const x = (e.clientY - r.top) * (W / r.height);
+      const y = (r.right - e.clientX) * (H / r.width);
+      return [
+        Math.max(0, Math.min(W, x)),
+        Math.max(0, Math.min(H, y)),
+      ];
+    }
+
+    // Standard unrotated:
+    const x = (e.clientX - r.left) * (W / r.width);
+    const y = (e.clientY - r.top) * (H / r.height);
+    return [
+      Math.max(0, Math.min(W, x)),
+      Math.max(0, Math.min(H, y)),
+    ];
   };
 
   return (
