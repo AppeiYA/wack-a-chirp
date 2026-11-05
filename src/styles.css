@@ -1,0 +1,170 @@
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: #14181f;
+  color: #e8ecf1;
+  font-family: system-ui, sans-serif;
+}
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 12px;
+}
+h1 { margin: 0; font-size: 28px; letter-spacing: 1px; }
+
+.hud {
+  display: flex;
+  gap: 12px;
+  width: min(96vw, 960px);
+}
+.hud div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 0;
+  background: #1f2632;
+  border: 1px solid #3a4352;
+  border-radius: 6px;
+}
+.hud span { font-size: 12px; color: #9aa6b8; }
+.hud b { font-size: 22px; font-variant-numeric: tabular-nums; }
+
+.stage { position: relative; width: min(96vw, 960px); }
+.game-canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  image-rendering: pixelated;
+  border: 4px solid #0b0e13;
+  touch-action: none;
+  user-select: none;
+}
+.stage.playing .game-canvas { cursor: none; }
+
+.overlay {
+  position: absolute;
+  inset: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 14, 20, 0.72);
+}
+.panel {
+  width: min(88%, 420px);
+  padding: 20px;
+  text-align: center;
+  background: #1a2029;
+  border: 2px solid #3a4352;
+  border-radius: 10px;
+}
+.panel h2 { margin: 0 0 8px; font-size: 26px; }
+.panel p { margin: 6px 0; }
+.muted { color: #9aa6b8; font-size: 14px; }
+.big { font-size: 56px; font-weight: 700; margin: 4px 0; }
+.flash { color: #ffd84a; font-weight: 700; animation: blink 0.6s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0.3; } }
+.panel a { color: #8fb0ff; }
+
+.picker { display: flex; gap: 8px; margin: 12px 0; }
+.picker button { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.picker small { color: #9aa6b8; font-size: 11px; }
+.picker button.on { border-color: #ffd84a; background: #2d3646; }
+
+button {
+  padding: 8px 16px;
+  border: 1px solid #3a4352;
+  border-radius: 6px;
+  background: #1f2632;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+button:hover { background: #2a3445; }
+button.primary {
+  width: 100%;
+  background: #c4262e;
+  border-color: #8a1a20;
+  font-weight: 700;
+  font-size: 18px;
+}
+button.primary:hover { background: #d8313a; }
+
+.hud { flex-wrap: wrap; align-items: stretch; }
+.hud small { font-size: 11px; color: #ffd84a; }
+.hud .hot { border-color: #ffd84a; }
+.hud .mute {
+  flex: 0 0 auto;
+  align-self: center;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+/* keep the whole game inside the viewport, including landscape phones */
+.stage,
+.hud {
+  width: min(96vw, 960px, calc((100vh - 150px) * 16 / 9));
+}
+@supports (height: 100svh) {
+  .stage,
+  .hud {
+    width: min(96vw, 960px, calc((100svh - 150px) * 16 / 9));
+  }
+}
+
+/* overlays: center when they fit, scroll when they don't */
+.overlay { overflow-y: auto; }
+.panel { margin: auto; }
+
+@media (max-width: 640px) {
+  .app { padding: 12px 8px; gap: 8px; }
+  h1 { font-size: 22px; }
+  .hud { gap: 6px; }
+  .hud b { font-size: 18px; }
+  .panel { width: 94%; padding: 12px; }
+  .panel h2 { font-size: 20px; margin-bottom: 4px; }
+  .panel .muted { font-size: 12px; }
+  .big { font-size: 36px; }
+  .picker { margin: 8px 0; }
+  button.primary { font-size: 16px; padding: 6px; }
+}
+
+.rotate-hint { display: none; }
+
+@media (orientation: portrait) and (max-width: 640px) and (pointer: coarse) {
+  .rotate-hint {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: min(96vw, 960px);
+    padding: 8px 10px;
+    font-size: 13px;
+    background: #1f2632;
+    border: 1px solid #ffd84a;
+    border-radius: 6px;
+  }
+  .rotate-hint span:nth-child(2) { flex: 1; }
+  .rotate-hint button { padding: 4px 10px; font-size: 12px; }
+
+  .rotate-hint .phone {
+    flex: 0 0 auto;
+    width: 12px;
+    height: 20px;
+    border: 2px solid #ffd84a;
+    border-radius: 3px;
+    animation: tilt 1.8s ease-in-out infinite;
+  }
+}
+
+@keyframes tilt {
+  0%, 30% { transform: rotate(0deg); }
+  60%, 100% { transform: rotate(90deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotate-hint .phone { animation: none; }
+}
