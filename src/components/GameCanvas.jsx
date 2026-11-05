@@ -60,6 +60,11 @@ const GameCanvas = forwardRef(function GameCanvas(
         if (broke) sfx.comboBreak();
         triggerHaptic(broke ? [40, 50, 40] : 30);
       },
+      onPorcupineHit: () => {
+        react("miss", 1500);
+        sfx.porcupine();
+        triggerHaptic([60, 80, 60]);
+      },
       onSwing: () => sfx.swing(),
       onScore: (s) => cb.current.onScore?.(s),
       onCombo: (c) => cb.current.onCombo?.(c),

@@ -3,7 +3,7 @@ import {
   LAYOUTS, MULT, POINTS_BASE, ROUND_SECONDS, DIFF, TIMING,
   COMBO_TIERS, COMBO_BREAK_POPUP, SHAKE, comboTier,
 } from "./config";
-import { drawHole, drawHoleFront, drawMole, drawHammer, moleOffset } from "./actors";
+import { drawHole, drawHoleFront, drawMole, drawPorcupine, drawHammer, moleOffset } from "./actors";
 
 const lerp = (a, b, t) => a + (b - a) * t;
 const POPUP_MS = 600;
@@ -14,7 +14,7 @@ const tierColor = (t) => TIER_COLORS[Math.min(t, TIER_COLORS.length - 1)];
 
 export class Game {
   constructor(events) {
-    // events: onHit, onMiss, onSwing, onScore, onCombo, onTick, onEnd
+    // events: onHit, onMiss, onSwing, onScore, onCombo, onTick, onEnd, onPorcupineHit
     this.ev = events;
     this.running = false;
     this.paused = false;
@@ -28,6 +28,7 @@ export class Game {
     this.hits = 0;
     this.whiffs = 0;
     this.escaped = 0;
+    this.porcupineHits = 0;
     this.streak = 0;
     this.bestStreak = 0;
     this.comboPop = 0;
@@ -44,7 +45,7 @@ export class Game {
     this.holes = LAYOUTS[holes];
     this.mult = MULT[holes];
     this.moles = this.holes.map(() => ({
-      state: "hidden", t: 0, upFor: 0, escaped: false,
+      state: "hidden", t: 0, upFor: 0, escaped: false, type: "mole",
     }));
   }
 
@@ -54,6 +55,7 @@ export class Game {
     this.hits = 0;
     this.whiffs = 0;
     this.escaped = 0;
+    this.porcupineHits = 0;
     this.streak = 0;
     this.bestStreak = 0;
     this.comboPop = 0;
@@ -102,6 +104,7 @@ export class Game {
       hits: this.hits,
       whiffs: this.whiffs,
       escaped: this.escaped,
+      porcupineHits: this.porcupineHits,
       bestStreak: this.bestStreak,
     });
   }
@@ -123,8 +126,10 @@ export class Game {
     ];
   }
 
-  burst(x, y, n, gold) {
-    const cols = gold
+  burst(x, y, n, gold, quill = false) {
+    const cols = quill
+      ? ["#ffd84a", "#d4a373", "#382417", "#ff4d4d"]
+      : gold
       ? ["#ffd84a", "#ffffff", "#ffb13b"]
       : ["#8b5e3c", "#c89b6d", "#ffd84a"];
     for (let i = 0; i < n; i++) {
@@ -180,7 +185,15 @@ export class Game {
       this.moles.forEach((m, i) => m.state === "hidden" && free.push(i));
       if (free.length) {
         const i = free[Math.floor(Math.random() * free.length)];
-        Object.assign(this.moles[i], { state: "rising", t: 0, upFor, escaped: false });
+        // Porcupines are a lot rarer than moles (~14% chance):
+        const isPorcupine = Math.random() < 0.14;
+        Object.assign(this.moles[i], {
+          state: "rising",
+          t: 0,
+          upFor,
+          escaped: false,
+          type: isPorcupine ? "porcupine" : "mole",
+        });
       }
       this.spawnIn = interval * (0.7 + Math.random() * 0.6);
     }
@@ -194,8 +207,11 @@ export class Game {
       } else if (m.state === "up" && m.t >= m.upFor) {
         m.state = "sinking";
         m.t = 0;
-        this.escaped++;
-        this.breakStreak("escape");
+        if (m.type === "mole") {
+          this.escaped++;
+          this.breakStreak("escape");
+        }
+        // Note: avoiding a porcupine is successful, so no escape penalty or streak break
       } else if (m.state === "sinking" && m.t >= TIMING.sink) {
         m.state = "hidden";
       } else if (m.state === "hit" && m.t >= TIMING.hit) {
@@ -244,13 +260,55 @@ export class Game {
       if (off > 16) continue;
       const [hx, hy] = this.holes[i];
       if (Math.abs(x - hx) <= 15 + slop && y >= hy - 28 - slop + off && y <= hy + 6 + slop) {
-        this.hitMole(m, hx, hy);
+        if (m.type === "porcupine") {
+          this.hitPorcupine(m, hx, hy);
+        } else {
+          this.hitMole(m, hx, hy);
+        }
         return;
       }
     }
 
+    // Wrong whack: deduct 10 points
     this.whiffs++;
+    const whiffPenalty = 10;
+    this.score = Math.max(0, this.score - whiffPenalty);
+    this.ev.onScore(this.score);
+    this.popups.push({
+      x: Math.round(x),
+      y: Math.max(26, Math.round(y - 12)),
+      t: 0,
+      life: POPUP_MS,
+      size: 10,
+      text: `-${whiffPenalty}`,
+      color: "#ff6b6b",
+    });
     this.breakStreak("whiff");
+  }
+
+  hitPorcupine(m, hx, hy) {
+    m.state = "hit";
+    m.t = 0;
+    this.porcupineHits++;
+    const penalty = 20;
+    this.score = Math.max(0, this.score - penalty);
+
+    this.popups.push({
+      x: hx,
+      y: hy - 28,
+      t: 0,
+      life: EVENT_POPUP_MS,
+      size: 11,
+      text: `-${penalty} OUCH!`,
+      color: "#ff3b3b",
+    });
+
+    this.burst(hx, hy - 10, 18, false, true);
+    this.kick(SHAKE.hit * 2);
+    this.breakStreak("porcupine");
+
+    this.ev.onScore(this.score);
+    this.ev.onPorcupineHit?.({ penalty });
   }
 
   hitMole(m, hx, hy) {
@@ -327,7 +385,14 @@ export class Game {
   draw(ctx, now) {
     this.holes.forEach(([x, y], i) => {
       drawHole(ctx, x, y);
-      if (this.moles[i].state !== "hidden") drawMole(ctx, x, y, this.moles[i]);
+      const m = this.moles[i];
+      if (m.state !== "hidden") {
+        if (m.type === "porcupine") {
+          drawPorcupine(ctx, x, y, m);
+        } else {
+          drawMole(ctx, x, y, m);
+        }
+      }
       drawHoleFront(ctx, x, y);
     });
 

@@ -76,6 +76,68 @@ export function drawMole(ctx, hx, hy, m) {
   ctx.restore();
 }
 
+/* ---------- porcupine (hazard) ---------- */
+
+const PORCUPINE_PAL = {
+  Y: "#ffd84a", // bright quill tips
+  S: "#d4a373", // quill shaft
+  b: "#4a3324", // dark bristly body
+  N: "#ff4d4d", // red danger nose
+  K: "#111111", // eye pupil
+  W: "#ffffff", // eye white
+};
+
+const PORCUPINE = [
+  "Y.S..YY..S.Y",
+  ".SSSYYYYSSS.",
+  "SYYSbbbbbSYY",
+  "SSbbKWbbKWbS",
+  ".SbbKKbbKKbS",
+  "SYbbbNNbbbYS",
+  ".SbbbWWbbbbS",
+  "SYSSSSSSSSYS",
+  ".SbbbbbbbbS.",
+  "SYSSSSSSSSYS",
+  ".YYYYYYYYYY.",
+  "............",
+];
+
+const PORCUPINE_HIT = [
+  "Y.Y.YYYY.Y.Y",
+  ".SSSYYYYSSS.",
+  "SYYSbbbbbSYY",
+  "SSbbKKbbKKbS",
+  ".SbbKKbbKKbS",
+  "SYbbbNNbbbYS",
+  ".SbbbWWbbbbS",
+  "SYSSSSSSSSYS",
+  ".SbbbbbbbbS.",
+  "SYSSSSSSSSYS",
+  ".YYYYYYYYYY.",
+  "............",
+];
+
+export function drawPorcupine(ctx, hx, hy, m) {
+  const hit = m.state === "hit";
+  const rows = hit ? PORCUPINE_HIT : PORCUPINE;
+  const sy = hit ? 1 : 2;
+  const top = hy + 2 - 12 * sy + moleOffset(m);
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(hx - 20, hy - 40, 40, 43);
+  ctx.clip();
+  for (let y = 0; y < rows.length; y++) {
+    for (let x = 0; x < rows[y].length; x++) {
+      const c = rows[y][x];
+      if (c === ".") continue;
+      ctx.fillStyle = PORCUPINE_PAL[c];
+      ctx.fillRect(hx - 12 + x * 2, top + y * sy, 2, sy);
+    }
+  }
+  ctx.restore();
+}
+
 /* ---------- hammer ---------- */
 
 const HPAL = { k: "#a8743f", H: "#d9a066", h: "#b5651d", D: "#7a3f10" };

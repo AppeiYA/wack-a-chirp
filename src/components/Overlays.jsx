@@ -29,7 +29,7 @@ export function MenuOverlay({ holes, onHoles, onStart, best, onReset, muted }) {
         <h2>WackAChirp</h2>
         <p className="tagline">Wack moles before they escape. 60 seconds on the clock!</p>
         <p className="muted small">
-          Chain hits for combo multipliers ({comboText}). Misses break your chain.
+          Chain hits for combo multipliers ({comboText}). Wrong swings cost -10 pts. Avoid rare porcupines (-20 pts)!
         </p>
         <HolePicker holes={holes} onChange={onHoles} />
         <button className="primary main-btn" type="button" onClick={onStart}>
@@ -94,7 +94,8 @@ export function GameOverOverlay({ result, best, holes, onHoles, onAgain, onMenu 
         {result.isNew && <p className="flash">★ New High Score! ★</p>}
         <p className="big">{result.score}</p>
         <p className="muted stats-line">
-          Best: {best} · Best Combo: {result.bestStreak} · Hits: {result.hits} · Escaped: {result.escaped} · Misses: {result.whiffs}
+          Best: {best} · Best Combo: {result.bestStreak} · Hits: {result.hits} · Whiffs: {result.whiffs}
+          {result.porcupineHits > 0 ? ` · Porcupines Hit: ${result.porcupineHits}` : ""} · Escaped: {result.escaped}
         </p>
         <HolePicker holes={holes} onChange={onHoles} />
         <div className="btn-row">

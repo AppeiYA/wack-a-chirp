@@ -73,6 +73,10 @@ export const sfx = {
     tone({ freq: f, to: f * 1.5, dur: 0.1, delay: 0.03 });
   },
   miss: () => tone({ freq: 200, to: 140, dur: 0.15, type: "sawtooth", vol: 0.05 }),
+  porcupine: () => {
+    tone({ freq: 140, to: 60, dur: 0.24, type: "sawtooth", vol: 0.15 });
+    noise(0.2, 0.08);
+  },
   escape: () => tone({ freq: 300, to: 150, dur: 0.18, type: "sine", vol: 0.06 }),
   tierUp: () =>
     [523, 659, 784, 1047].forEach((f, i) =>
