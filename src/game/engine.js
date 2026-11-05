@@ -17,6 +17,8 @@ export class Game {
     // events: onHit, onMiss, onSwing, onScore, onCombo, onTick, onEnd
     this.ev = events;
     this.running = false;
+    this.paused = false;
+    this.isTouch = false;
     this.px = W / 2;
     this.py = 90;
     this.swingAt = -1e9;
@@ -62,13 +64,38 @@ export class Game {
     this.popups = [];
     this.particles = [];
     this.running = true;
+    this.paused = false;
     this.ev.onScore(0);
     this.ev.onCombo({ streak: 0, mult: 1 });
     this.ev.onTick(ROUND_SECONDS);
   }
 
+  pause() {
+    if (this.running) {
+      this.paused = true;
+    }
+  }
+
+  resume() {
+    if (this.running) {
+      this.paused = false;
+    }
+  }
+
+  stop() {
+    if (!this.running) return;
+    this.finish();
+  }
+
+  cancel() {
+    this.running = false;
+    this.paused = false;
+    this.moles.forEach((m) => (m.state = "hidden"));
+  }
+
   finish() {
     this.running = false;
+    this.paused = false;
     this.moles.forEach((m) => (m.state = "hidden"));
     this.ev.onEnd({
       score: this.score,
@@ -133,7 +160,7 @@ export class Game {
   /* ---------- update ---------- */
 
   update(dt) {
-    if (!this.running) return;
+    if (!this.running || this.paused) return;
 
     this.timeLeft -= dt;
     const sec = Math.max(0, Math.ceil(this.timeLeft / 1000));
@@ -197,14 +224,16 @@ export class Game {
   /* ---------- input ---------- */
 
   pointerMove(x, y) {
+    if (this.paused) return;
     this.px = x;
     this.py = y;
   }
 
-  pointerDown(x, y, now, slop = 0) {
+  pointerDown(x, y, now, slop = 0, isTouch = false) {
     this.px = x;
     this.py = y;
-    if (!this.running) return;
+    this.isTouch = isTouch;
+    if (!this.running || this.paused) return;
     this.swingAt = now;
     this.ev.onSwing();
 
@@ -268,17 +297,17 @@ export class Game {
     const pop = this.comboPop > 0 ? 3 : 0;
 
     ctx.textAlign = "center";
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 2;
     ctx.strokeStyle = "#1b1714";
-    ctx.font = `bold ${14 + pop}px monospace`;
+    ctx.font = `bold ${14 + pop}px system-ui, -apple-system, sans-serif`;
     const label = `${this.streak} COMBO`;
     ctx.strokeText(label, CX, 30);
     ctx.fillStyle = tierColor(tier);
     ctx.fillText(label, CX, 30);
 
     if (mult > 1) {
-      ctx.font = "bold 9px monospace";
-      ctx.lineWidth = 2;
+      ctx.font = "bold 9px system-ui, -apple-system, sans-serif";
+      ctx.lineWidth = 1.5;
       ctx.strokeText(`x${mult} points`, CX, 41);
       ctx.fillStyle = "#ffffff";
       ctx.fillText(`x${mult} points`, CX, 41);
@@ -305,12 +334,12 @@ export class Game {
     this.drawCombo(ctx);
 
     ctx.textAlign = "center";
-    ctx.lineWidth = 2;
     ctx.strokeStyle = "#1b1714";
     for (const p of this.popups) {
       const u = p.t / p.life;
       ctx.globalAlpha = 1 - u * u;
-      ctx.font = `bold ${p.size}px monospace`;
+      ctx.font = `bold ${p.size}px system-ui, -apple-system, sans-serif`;
+      ctx.lineWidth = p.size >= 11 ? 2 : 1.2;
       ctx.strokeText(p.text, p.x, p.y - u * 16);
       ctx.fillStyle = p.color;
       ctx.fillText(p.text, p.x, p.y - u * 16);
@@ -323,6 +352,10 @@ export class Game {
     }
     ctx.globalAlpha = 1;
 
-    if (this.running) drawHammer(ctx, this.px, this.py, now - this.swingAt, now);
+    // Draw hammer: on touch devices only show hammer during/after swing; on mouse hover constantly
+    const showHammer = this.running && (!this.isTouch || (now - this.swingAt < TIMING.swing + 160));
+    if (showHammer) {
+      drawHammer(ctx, this.px, this.py, now - this.swingAt, now);
+    }
   }
 }

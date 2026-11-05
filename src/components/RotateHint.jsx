@@ -8,7 +8,7 @@ export default function RotateHint() {
     <div className="rotate-hint" role="status">
       <span className="phone" aria-hidden="true" />
       <span>Rotate your phone for a bigger playfield</span>
-      <button onClick={() => setOpen(false)}>Got it</button>
+      <button type="button" onClick={() => setOpen(false)}>Got it</button>
     </div>
   );
 }

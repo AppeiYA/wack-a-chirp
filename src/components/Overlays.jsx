@@ -4,9 +4,14 @@ function HolePicker({ holes, onChange }) {
   return (
     <div className="picker">
       {HOLE_OPTIONS.map((n) => (
-        <button key={n} className={n === holes ? "on" : ""} onClick={() => onChange(n)}>
-          {n} holes
-          <small>x{MULT[n]} points</small>
+        <button
+          key={n}
+          type="button"
+          className={n === holes ? "on" : ""}
+          onClick={() => onChange(n)}
+        >
+          <span>{n} holes</span>
+          <small>x{MULT[n]} pts</small>
         </button>
       ))}
     </div>
@@ -22,46 +27,84 @@ export function MenuOverlay({ holes, onHoles, onStart, best, onReset, muted }) {
     <div className="overlay">
       <div className="panel">
         <h2>WackAChirp</h2>
-        <p>Wack every mole before it gets away. 60 seconds on the clock.</p>
-        <p className="muted">
-          Chain hits for combo points: {comboText}. A missed swing or an escaped mole
-          breaks the chain.
+        <p className="tagline">Wack moles before they escape. 60 seconds on the clock!</p>
+        <p className="muted small">
+          Chain hits for combo multipliers ({comboText}). Misses break your chain.
         </p>
         <HolePicker holes={holes} onChange={onHoles} />
-        <button className="primary" onClick={onStart}>Start</button>
-        <p className="muted">
-          Best on this device: {best}{" "}
+        <button className="primary main-btn" type="button" onClick={onStart}>
+          Start Game
+        </button>
+        <div className="panel-footer">
+          <span className="muted">
+            Best on device: <b>{best}</b>
+          </span>
           {best > 0 && (
-            <a
-              href="#reset"
-              onClick={(e) => {
-                e.preventDefault();
+            <button
+              type="button"
+              className="text-btn"
+              onClick={() => {
                 if (window.confirm("Reset your best score on this device?")) onReset();
               }}
             >
-              reset
-            </a>
+              Reset
+            </button>
           )}
-        </p>
-        {muted && <p className="muted">Sound is off. Use the Sound button above to turn it on.</p>}
+        </div>
+        {muted && <p className="muted sound-hint">Sound is muted. Unmute anytime via Sound button.</p>}
       </div>
     </div>
   );
 }
 
-export function GameOverOverlay({ result, best, holes, onHoles, onAgain }) {
+export function PauseOverlay({ score, secs, onResume, onRestart, onStop, onMenu }) {
+  return (
+    <div className="overlay">
+      <div className="panel">
+        <h2>Game Paused</h2>
+        <p className="muted">
+          Score: <b>{score}</b> · Time Left: <b>{secs}s</b>
+        </p>
+        <div className="btn-stack">
+          <button className="primary" type="button" onClick={onResume}>
+            ▶ Resume Game
+          </button>
+          <div className="btn-row">
+            <button type="button" onClick={onRestart}>
+              ↺ Restart
+            </button>
+            <button type="button" onClick={onStop}>
+              ⏹ Stop Round
+            </button>
+          </div>
+          <button type="button" className="secondary" onClick={onMenu}>
+            ← Back to Menu
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function GameOverOverlay({ result, best, holes, onHoles, onAgain, onMenu }) {
   return (
     <div className="overlay">
       <div className="panel">
         <h2>Time's up!</h2>
-        {result.isNew && <p className="flash">New high score!</p>}
+        {result.isNew && <p className="flash">★ New High Score! ★</p>}
         <p className="big">{result.score}</p>
-        <p className="muted">
-          Best {best} · Best combo {result.bestStreak} · {result.hits} hits ·{" "}
-          {result.escaped} got away · {result.whiffs} missed swings
+        <p className="muted stats-line">
+          Best: {best} · Best Combo: {result.bestStreak} · Hits: {result.hits} · Escaped: {result.escaped} · Misses: {result.whiffs}
         </p>
         <HolePicker holes={holes} onChange={onHoles} />
-        <button className="primary" onClick={onAgain}>Play again</button>
+        <div className="btn-row">
+          <button className="primary" type="button" onClick={onAgain}>
+            Play again
+          </button>
+          <button className="secondary" type="button" onClick={onMenu}>
+            ← Back to Menu
+          </button>
+        </div>
       </div>
     </div>
   );

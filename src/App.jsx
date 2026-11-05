@@ -1,14 +1,14 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import GameCanvas from "./components/GameCanvas";
 import Hud from "./components/Hud";
-import { MenuOverlay, GameOverOverlay } from "./components/Overlays";
+import { MenuOverlay, GameOverOverlay, PauseOverlay } from "./components/Overlays";
 import { useHighScore } from "./hooks/useHighScore";
 import { ROUND_SECONDS } from "./game/config";
 import RotateHint from "./components/RotateHint";
 import { isMuted, setMuted, unlock, sfx } from "./game/audio";
 
 export default function App() {
-  const [screen, setScreen] = useState("menu"); // menu | playing | over
+  const [screen, setScreen] = useState("menu"); // menu | playing | paused | over
   const [holes, setHoles] = useState(3);
   const [session, setSession] = useState(null);
   const [score, setScore] = useState(0);
@@ -16,6 +16,7 @@ export default function App() {
   const [secs, setSecs] = useState(ROUND_SECONDS);
   const [result, setResult] = useState(null);
   const [muted, setMutedState] = useState(isMuted);
+  const canvasHandleRef = useRef(null);
   const { best, submit, reset } = useHighScore();
 
   const toggleMute = () => {
@@ -25,7 +26,7 @@ export default function App() {
     if (!next) sfx.tick();
   };
 
-  const start = () => {
+  const start = useCallback(() => {
     unlock();
     setScore(0);
     setCombo({ streak: 0, mult: 1 });
@@ -33,7 +34,40 @@ export default function App() {
     setResult(null);
     setScreen("playing");
     setSession({ id: performance.now(), holes });
-  };
+  }, [holes]);
+
+  const handlePause = useCallback(() => {
+    if (screen === "playing") {
+      canvasHandleRef.current?.pause();
+      setScreen("paused");
+    }
+  }, [screen]);
+
+  const handleResume = useCallback(() => {
+    if (screen === "paused") {
+      canvasHandleRef.current?.resume();
+      setScreen("playing");
+    }
+  }, [screen]);
+
+  const handleStop = useCallback(() => {
+    if (screen === "playing" || screen === "paused") {
+      canvasHandleRef.current?.stop();
+    }
+  }, [screen]);
+
+  const handleBackToMenu = useCallback(() => {
+    if (screen === "playing" || screen === "paused") {
+      const ok = window.confirm("Quit current game and return to main menu?");
+      if (!ok) return;
+      canvasHandleRef.current?.cancel();
+    }
+    setScreen("menu");
+  }, [screen]);
+
+  const handleRestart = useCallback(() => {
+    start();
+  }, [start]);
 
   const handleEnd = (r) => {
     const isNew = submit(r.score);
@@ -41,9 +75,27 @@ export default function App() {
     setScreen("over");
   };
 
+  // Keyboard shortcut: Escape or 'p' to toggle pause
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === "Escape" || e.key === "p" || e.key === "P") {
+        if (screen === "playing") {
+          handlePause();
+        } else if (screen === "paused") {
+          handleResume();
+        }
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [screen, handlePause, handleResume]);
+
   return (
-    <main className="app">
-      <h1>WackAChirp</h1>
+    <main className={`app screen-${screen}`}>
+      <header className="app-header">
+        <h1>WackAChirp</h1>
+      </header>
+
       <Hud
         score={score}
         best={best}
@@ -51,16 +103,25 @@ export default function App() {
         combo={combo}
         muted={muted}
         onToggleMute={toggleMute}
+        screen={screen}
+        onPause={handlePause}
+        onResume={handleResume}
+        onStop={handleStop}
+        onBack={handleBackToMenu}
       />
+
       <RotateHint />
+
       <div className={`stage ${screen === "playing" ? "playing" : ""}`}>
         <GameCanvas
+          ref={canvasHandleRef}
           session={session}
           onScore={setScore}
           onCombo={setCombo}
           onTick={setSecs}
           onEnd={handleEnd}
         />
+
         {screen === "menu" && (
           <MenuOverlay
             holes={holes}
@@ -71,6 +132,18 @@ export default function App() {
             muted={muted}
           />
         )}
+
+        {screen === "paused" && (
+          <PauseOverlay
+            score={score}
+            secs={secs}
+            onResume={handleResume}
+            onRestart={handleRestart}
+            onStop={handleStop}
+            onMenu={handleBackToMenu}
+          />
+        )}
+
         {screen === "over" && result && (
           <GameOverOverlay
             result={result}
@@ -78,6 +151,7 @@ export default function App() {
             holes={holes}
             onHoles={setHoles}
             onAgain={start}
+            onMenu={handleBackToMenu}
           />
         )}
       </div>
